@@ -13,12 +13,14 @@ public class KDTree{
 			double x;
 			double y;
 			boolean checkX;
+      int depth;
 			Node childL, childR;
 
-			public Node(double x, double y, boolean checkX){
+			public Node(double x, double y, boolean checkX, int depth){
 				this.x = x;
 				this.y = y;
 				this.checkX = checkX;
+        this.depth = depth;
         childL = childR = null;
 			}
 
@@ -45,7 +47,7 @@ public class KDTree{
 		 */
 		public void insert(double x, double y){
       if(this.root == null){
-        this.root = new Node(x,y,true);
+        this.root = new Node(x,y,true,1);
       }else{
         Node aux = this.root;
         while(aux != null){
@@ -54,14 +56,14 @@ public class KDTree{
               if(aux.childR != null){
                 aux = aux.childR;
               }else{
-                aux.childR = new Node(x,y,!aux.checkX);
+                aux.childR = new Node(x,y,!aux.checkX,aux.depth+1);
                 break;
               }
             }else{
               if(aux.childL != null){
                 aux = aux.childL;
               }else{
-                aux.childL = new Node(x,y,!aux.checkX);
+                aux.childL = new Node(x,y,!aux.checkX,aux.depth+1);
                 break;
               }
             }
@@ -70,14 +72,14 @@ public class KDTree{
               if(aux.childR != null){
                 aux = aux.childR;
               }else{
-                aux.childR = new Node(x,y,!aux.checkX);
+                aux.childR = new Node(x,y,!aux.checkX,aux.depth+1);
                 break;
               }
             }else{
               if(aux.childL != null){
                 aux = aux.childL;
               }else{
-                aux.childL = new Node(x,y,!aux.checkX);
+                aux.childL = new Node(x,y,!aux.checkX,aux.depth+1);
                 break;
               }
             }
@@ -91,8 +93,42 @@ public class KDTree{
 		 *
 		 */
 		public Node get(double x, double y){
-			return null;
+      double dist = 0.0, dist2 = 0.0;
+      Node node = this.root;
+
+      while(node != null){
+        if(node.childL != null){
+          dist = calcDistance(x,y,node.childL.x,node.childL.y);
+        }else{
+          dist = Double.POSITIVE_INFINITY;
+        }
+        if(node.childR != null){
+          dist2 = calcDistance(x,y,node.childR.x,node.childR.y);
+        }else{
+          dist2 = Double.POSITIVE_INFINITY;
+        }
+
+        if(dist < dist2){
+          node = node.childL;
+          depth++;
+        }else if(dist > dist2){
+          node = node.childR;
+          depth++;
+        }else{
+          return node;
+        }
+      }
+
+      return null;
 		}
+
+
+    public double calcDistance(double x1, double y1, double x2, double y2){
+          double powX = Math.pow(x2-x1, 2);
+          double powY = Math.pow(y2-y1, 2);
+          double sqrt = Math.sqrt(powX+powY);
+          return sqrt;
+    }
 
     public void printTree(Node x){
       if(x != null){
@@ -118,7 +154,7 @@ public class KDTree{
 	 * por la salida estandar.
 	 */
 	public static void main(String args[]){
-		System.out.println(args[0]+" "+args[1]);
+		//System.out.println(args[0]+" "+args[1]);
     KdTree tree = new KdTree();
 
 		try(BufferedReader br = new BufferedReader(new FileReader(args[0]))){
@@ -139,7 +175,27 @@ public class KDTree{
         System.exit(0);
       }
 
-      tree.printTree(tree.root);
+      //tree.printTree(tree.root);
+
+      try(BufferedReader br = new BufferedReader(new FileReader(args[1]))){
+
+          String sCurrentLine;
+
+          while((sCurrentLine = br.readLine()) != null){
+            //System.out.println(sCurrentLine);
+            String[] input = sCurrentLine.split(" ");
+            //tree.insert(Double.parseDouble(input[0]),Double.parseDouble(input[1]));
+            //System.out.println(input[0]+" "+input[1]);
+            Node node = tree.get(Double.parseDouble(input[0]),Double.parseDouble(input[1]));
+            System.out.println(node.x+" "+node.y+" "+node.depth);
+
+          }
+          //System.out.println(data);
+
+        }catch (IOException e){
+          e.printStackTrace();
+          System.exit(0);
+        }
 
   }
 }
